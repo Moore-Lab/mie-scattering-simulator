@@ -1,0 +1,92 @@
+[
+  {
+    "experiment_key": "tebbenjohanns2019_backward_z_NA08",
+    "run_config": {
+      "sphere": {"radius_m": 5.0e-08, "m": [1.44, 0.0]},
+      "medium": {"n": 1.0, "wavelength_vacuum_m": 1.55e-06},
+      "beam": {"type": "RichardsWolfFocus", "NA": 0.8, "filling_factor": 1.0, "polarization": [1, 0]},
+      "collection": {"direction": "backward", "NA": 0.8, "apodization": "aplanatic", "lo_mode": "optimal"},
+      "n_hat": [0, 0, 1],
+      "dof": "z",
+      "grid": {"ntheta": 120, "nphi": 240},
+      "n_max": null,
+      "notes": "Dipole/Rayleigh limit: radius << wavelength (radius_m = 50 nm chosen small vs lambda=1550 nm so that the size parameter x = 2*pi*r/lambda ~ 0.2 is deeply in the dipole regime, matching the point-dipole theory of the source, which has NO material or radius). m=1.44 is the standard silica value used to instantiate a concrete dipole; the target is material-independent in the dipole limit. This is the G-LIMIT dipole gate case."
+    },
+    "target_quantity": "detection_efficiency",
+    "target_value": 0.6,
+    "target_tolerance": 0.1,
+    "target_provenance": "Tebbenjohanns, Frimmer, Novotny, PRA 100, 043821 (2019), Fig. 3(c) and Sec. III B ('efficiency to be as high as eta_bw_z = 0.6' at NA_tl = 0.8; Abstract 'more than 60% of the Heisenberg limit'). Definition: eta_bw_z = ratio of Heisenberg-limit imprecision to backward split-detection imprecision along z (Eqs. 8 vs Appendix D2). W4c must apply the SAME definition; any normalization to mieinfo's eta_q is W4c's documented step."
+  },
+  {
+    "experiment_key": "tebbenjohanns2019_ideal_z",
+    "run_config": {
+      "sphere": {"radius_m": 5.0e-08, "m": [1.44, 0.0]},
+      "medium": {"n": 1.0, "wavelength_vacuum_m": 1.55e-06},
+      "beam": {"type": "RichardsWolfFocus", "NA": 0.85, "filling_factor": 1.0, "polarization": [1, 0]},
+      "collection": {"direction": "backward", "NA": 0.99, "apodization": "aplanatic", "lo_mode": "optimal"},
+      "n_hat": [0, 0, 1],
+      "dof": "z",
+      "grid": {"ntheta": 160, "nphi": 320},
+      "n_max": null,
+      "notes": "Ideal-scheme fraction of axial (z) Fisher information contained in the BACKWARD half-space (z<0), dipole/Rayleigh limit. Collection NA=0.99 approximates the full backward hemisphere. Target is the '>90%' backward-fraction claim, i.e. F_z(backward hemisphere)/F_z(4pi). radius 50 nm << lambda 1550 nm keeps the dipole limit; m=1.44 silica as a concrete instantiation (material-independent target)."
+    },
+    "target_quantity": "backward_info_fraction",
+    "target_value": 0.9,
+    "target_tolerance": 0.1,
+    "target_provenance": "Tebbenjohanns, Frimmer, Novotny, PRA 100, 043821 (2019), Sec. II C, p.4 ('more than 90% of the entire information about the position along the z axis is contained in the field scattered in the backward direction (half-space z<0)'). Definition: fraction of the total z-position Fisher information (integral of I_z(theta,phi) over 4pi) that falls in the z<0 hemisphere. This is a '>90%' lower bound -> tolerance is one-sided (predicted should be >= 0.9 - tol)."
+  },
+  {
+    "experiment_key": "maurer2023_smallparticle_z_backward",
+    "run_config": {
+      "sphere": {"radius_m": 1.0e-07, "m": [1.4387, 0.0]},
+      "medium": {"n": 1.0, "wavelength_vacuum_m": 1.55e-06},
+      "beam": {"type": "RichardsWolfFocus", "NA": 0.75, "filling_factor": 10.0, "polarization": [1, 0]},
+      "collection": {"direction": "backward", "NA": 0.75, "apodization": "aplanatic", "lo_mode": "optimal"},
+      "n_hat": [0, 0, 1],
+      "dof": "z",
+      "grid": {"ntheta": 140, "nphi": 280},
+      "n_max": null,
+      "notes": "Small-particle (Rayleigh, R/lambda0 -> 0) limit of the full Lorenz-Mie theory. radius_m = 100 nm gives size parameter x = 2*pi*r/lambda ~ 0.41 << 1, in the regime where Maurer reports eta^d_z = 0.55 (the R/lambda0 -> 0 asymptote). Silica m = sqrt(epsilon)=sqrt(2.07)=1.4387 (Table I). filling_factor f0=10 (overfilled lens) per Table I. NA_L = NA_R = 0.75, running-wave backward detection."
+    },
+    "target_quantity": "detection_efficiency",
+    "target_value": 0.55,
+    "target_tolerance": 0.08,
+    "target_provenance": "Maurer, Gonzalez-Ballestero, Romero-Isart, PRA 108, 033714 (2023), Fig. 4(a) first column and Sec. IV, p.9 ('detection efficiency eta^d_z = 0.55 >> 1/9 for the high-NA configuration'). Definition: eta^d_z = integral of the information radiation pattern I_z(theta_k,phi_k) over the backward collection solid angle S_d (Eq. 24). W4c applies this SAME definition; normalization to mieinfo's eta_q is W4c's documented step."
+  },
+  {
+    "experiment_key": "maurer2023_gs_threshold",
+    "run_config": {
+      "sphere": {"radius_m": 1.0e-07, "m": [1.4387, 0.0]},
+      "medium": {"n": 1.0, "wavelength_vacuum_m": 1.55e-06},
+      "beam": {"type": "RichardsWolfFocus", "NA": 0.75, "filling_factor": 10.0, "polarization": [1, 0]},
+      "collection": {"direction": "backward", "NA": 0.75, "apodization": "aplanatic", "lo_mode": "optimal"},
+      "n_hat": [0, 0, 1],
+      "dof": "z",
+      "grid": {"ntheta": 140, "nphi": 280},
+      "n_max": null,
+      "notes": "Ground-state-cooling detection-efficiency THRESHOLD, not a measured value: eta_mu > 1/9 ~= 0.111 is the necessary condition for n-bar_mu < 1 (Eqs. 23-24). Same run_config as maurer2023_smallparticle_z_backward; used to check that the predicted eta^d_z clears the 1/9 threshold (a physically meaningful acceptance line). target_tolerance is generous because 1/9 is a lower-bound threshold, not a point prediction."
+    },
+    "target_quantity": "detection_efficiency",
+    "target_value": 0.1111111111111111,
+    "target_tolerance": 0.44,
+    "target_provenance": "Maurer, Gonzalez-Ballestero, Romero-Isart, PRA 108, 033714 (2023), Eqs. (23)-(25) and Sec. III, p.6 ('a necessary condition to achieve center-of-mass ground-state cooling ... is eta_mu > 1/9 ~ 0.11'). Definition: total detection efficiency eta^d (Eq. 24) must exceed 1/9. This is a THRESHOLD/bound; predicted eta^d_z should satisfy predicted >= 1/9 (checked one-sided by W4c)."
+  },
+  {
+    "experiment_key": "magrini2021_forward_z_confocal",
+    "run_config": {
+      "sphere": {"radius_m": 7.15e-08, "m": [1.4496, 0.0]},
+      "medium": {"n": 1.0, "wavelength_vacuum_m": 1.064e-06},
+      "beam": {"type": "RichardsWolfFocus", "NA": 0.95, "filling_factor": 1.0, "polarization": [1, 0]},
+      "collection": {"direction": "forward", "NA": 0.95, "apodization": "aplanatic", "lo_mode": "optimal"},
+      "n_hat": [0, 0, 1],
+      "dof": "z",
+      "grid": {"ntheta": 140, "nphi": 280},
+      "n_max": null,
+      "notes": "Experimental confocal forward detection along the optical axis z. Silica 71.5 nm radius (stated), lambda0=1064 nm, tweezer NA=0.95 (stated). m=1.4496 is the standard dispersive silica value at 1064 nm quoted in the mieinfo Medium docstring (INTERFACES.md sec 1); the SOURCE does not state m, so this is a documented modeling input, NOT a source number. CAVEAT for W4c: the reported eta=0.34 is the TOTAL information collection efficiency Gamma_meas/(Gamma_ba+Gamma_th), which folds in optical losses and detector quantum efficiency beyond the ideal geometric/mode-matching eta_q that mieinfo predicts; expect the mieinfo prediction to be an UPPER bound (predicted >= 0.34). Definition mismatch to be handled/explained by W4c, not pre-converted here."
+    },
+    "target_quantity": "detection_efficiency",
+    "target_value": 0.34,
+    "target_tolerance": 0.2,
+    "target_provenance": "Magrini et al., Nature 595, 373 (2021), main text p.2-3 ('information collection efficiency eta = Gamma_meas/(Gamma_ba+Gamma_th) = 0.34'). Definition: ratio of measurement-induced decoherence to total backaction+thermal decoherence -- an experimentally-inferred TOTAL efficiency (includes losses & detector QE), an experimental-efficiency benchmark. W4c must document that mieinfo's ideal eta_q bounds this from above; large tolerance reflects the definition/loss gap."
+  }
+]
