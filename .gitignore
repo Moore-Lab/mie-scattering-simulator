@@ -12,3 +12,5 @@ figures/
 
 results/
 files.zip
+!docs/figures/
+!docs/figures/**

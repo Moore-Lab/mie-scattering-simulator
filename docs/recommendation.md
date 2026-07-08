@@ -54,6 +54,11 @@ This is the Tebbenjohanns-2019 dipole result, and the package reproduces it in t
 regime (the M2 dipole-limit gate passes; the `x`/`z` information maps are backward/forward
 as above).
 
+![Information radiation pattern for axial (z) motion — backward-weighted](figures/info_pattern_z.png)
+
+*Information pattern for axial (z) motion, silica a=5 µm at 532 nm: the density concentrates
+in the backward hemisphere (θ ≈ 155°), unlike the forward-peaked intensity.*
+
 ---
 
 ## 3. Collection efficiency (validated golden numbers, plane-wave model)
@@ -81,6 +86,11 @@ Reading (transverse forward is the `x`-axis of that beam; axial backward is the 
   complementary, not redundant.
 
 ---
+
+![Collection efficiency vs NA, forward and backward, for x and z motion](figures/eta_vs_na.png)
+
+*η(NA) curves: transverse-x is NA-limited in the forward port; axial-z saturates early in the
+backward port and is near-useless forward. This is the whole design story in one plot.*
 
 ## 4. Detection scheme
 
@@ -177,6 +187,8 @@ independent-result requirement (`MASTER_PLAN §7`) met.
 | Maurer 2023 small-particle backward-z | 0.518 | 0.55 | ✅ Mie-regime |
 | Maurer 2023 ground-state threshold | 0.518 | ≥1/9 | ✅ (bound) |
 | Magrini 2021 forward-z confocal | 0.041 | 0.34 | explained¹ |
+
+![Predicted vs reported efficiency for the literature benchmarks](figures/comparison.png)
 
 ¹ Reported value is a *total* experimentally-inferred efficiency (folds in optical losses + detector
 QE; the ideal geometric η_q is an upper bound on it), and a like-for-like reproduction needs the
