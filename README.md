@@ -1,91 +1,105 @@
-# Mie Information-Pattern Optimization
+# mie-scattering-simulator — `mieinfo`
 
-Simulate how position information is encoded in light scattered by a levitated
-microsphere, and evaluate/optimize detection geometry against that information
-content. This is a **general-purpose instrument**; the silica microsphere setup
-(Coriolis measurement) is the first validating instance and sets the defaults, but
-nothing in the core is specialized to it.
+Compute the **information radiation pattern** of a levitated dielectric microsphere and
+optimize the optical detection geometry for position sensing.
 
-**Core question:** for a given sphere (size, material), a set of probe beams (each
-with its own wavelength, propagation axis, polarization, focusing), and a sensed
-parameter (any displacement direction `n̂`), which collection geometry / detection
-scheme / **combination of beams** captures the most Fisher information — i.e. gets
-closest to the imprecision–backaction (Heisenberg) limit?
+Given a sphere, one or more probe beams, and a sensed displacement direction `n̂`, `mieinfo`
+reports where the Fisher information about that motion lives across scattering angle, how
+efficiently a given collection geometry captures it (`η`), and which detection configuration
+gets closest to the imprecision–backaction (Heisenberg) limit. Built for the Moore Lab
+levitated-optomechanics setup (fused-silica sphere, 1064 nm trap, dedicated **532 nm** imaging
+readout, two probe beams, forward + backward ports), but the core is general.
 
-Two facts about this apparatus shape the defaults: detection uses a **532 nm
-imaging probe, separate from the 1064 nm trap**, and there are **two probe beams**
-along different axes, so the detector is **multi-channel** (Fisher information adds
-across independent beams). A key consequence, already visible in the seeded physics:
-a lab axis is measured well in the forward lobe of a beam *transverse* to it and
-well in the *backward* lobe of a beam *collinear* with it — so the two-beam layout,
-plus the available backward port, is what makes all three axes measurable. See
-`PHYSICS.md §4.5, §8`.
+## Status
 
-This repository is a **build directive for Claude Code**, not finished software.
-It is designed so that a small fleet of Claude Code sessions — one orchestrator
-plus parallel workers — can develop the full simulation with minimal human
-intervention. The physics has been worked through, a validated reference engine
-is seeded, golden values are provided, and the work is decomposed into
-parallelizable tracks with fixed interface contracts.
+Milestones **M0–M4 complete; 233 tests pass.** The plane-wave engine is validated against
+`miepython` to 1e-12 (size parameter `x` up to 236); the information/detection pipeline
+reproduces the Tebbenjohanns-2019 dipole result and a Maurer-2023 Mie-regime efficiency.
+See **[`docs/recommendation.md`](docs/recommendation.md)** for the detection-geometry
+recommendation and its honest validation ledger. Remaining: the full analytic VSWF
+translation-addition (an optional speed path; the validated displacement path is
+finite-difference), and human physics sign-off (M5).
 
-## Read order
+## Install
 
-1. `MASTER_PLAN.md` — scope, phases, the session map, milestones. Start here.
-2. `PHYSICS.md` — the theory ground truth (equations, references, golden values).
-   Every worker reads the sections relevant to its track. No re-derivation.
-3. `ARCHITECTURE.md` — repo layout, package structure, tech stack, module DAG.
-4. `INTERFACES.md` — the contracts between modules. **This is what makes parallel
-   development possible.** Workers code against these, never against each other's
-   live implementation.
-5. `CONVENTIONS.md` — git workflow, Definition of Done, status protocol, how a
-   session escalates a blocker instead of guessing.
-6. `VALIDATION.md` — the correctness gates: analytic limits, golden values,
-   convergence, literature benchmarks.
-7. `LITERATURE.md` — seed bibliography and the extraction schema for the
-   literature track.
-8. `ORCHESTRATOR.md` — the manager session's playbook and the full task DAG.
-9. `W*.md` — one brief per worker track. A session opens exactly one.
+```bash
+pip install -e ".[dev]"     # runtime: numpy, scipy, pydantic; dev: miepython, matplotlib, pytest
+```
 
-## Who runs what
+Python ≥ 3.11.
 
-| Session | Role | Opens |
-|---|---|---|
-| Orchestrator | Owns plan, contracts, integration, review, scheduling. Writes no feature code. | `ORCHESTRATOR.md` |
-| W1 | Scattering engine (Mie + GLMT forward model). | `W1_scattering_engine.md` |
-| W2 | Information & detection model. | `W2_information_detection.md` |
-| W3 | Literature harvest, database, benchmarks. | `W3_literature_analysis.md` |
-| W4 | Validation, optimization, simulation-vs-literature comparison. | `W4_validation_optimization.md` |
+## Command line
 
-Each W-track is subdividable into concurrent sub-sessions (e.g. W1a/W1b/W1c) once
-its internal interfaces are fixed; see the track brief for the split.
+```bash
+mieinfo validate            # run the validation gates (G-GOLD / G-LIMIT / G-CONV); nonzero exit on failure
+mieinfo optimize            # rank detection geometries for the silica setup   -> results/optimize_result.json
+mieinfo compare             # simulate the literature benchmarks (G-LIT)        -> results/comparison.json
+mieinfo report              # optimize + compare + pointer to the recommendation
+```
 
-## Seed material
+## Python API
 
-`prototype/` contains a **validated plane-wave Mie implementation**
-(`mie_core.py`, agrees with `miepython` to ~1e-12 across x=0.3–236) and a working
-information-pattern computation (`information_pattern.py`) that already reproduces
-the qualitative result of Tebbenjohanns et al. (2019): axial-motion information is
-backward-weighted. `golden_values.json` and `information_pattern_results.json` hold
-validated reference numbers (the latter is the operative 532 nm, a=3–20 µm set).
+```python
+import numpy as np
+from mieinfo.types import Sphere, Medium, AngularGrid
+from mieinfo.glmt.beam import PlaneWave
+from mieinfo.glmt.scatter import PlaneWaveProvider
+from mieinfo.info.modes import information_pattern
+from mieinfo.detect.optics import CollectionGeometry, collection_efficiency
 
-**`prototype/validate.py` is the seed's self-validation gate** — run it first
-(`python prototype/validate.py --full`, expect exit 0). It cross-checks mie_core
-against `miepython`, round-trips the goldens, and regression-pins the info pattern.
-It is not decoration: it already caught a real large-`x` bug in the seed (an
-insufficient `D_n` recurrence burn-in margin that corrupted every `a_n` by ~5e-4
-once the 532 nm wavelength pushed `x` past ~60; fixed, see `PHYSICS.md §1.1`).
+med = Medium(n=1.0, wavelength_vacuum_m=532e-9)     # 532 nm detection light, vacuum
+sphere = Sphere(radius_m=5e-6, m=1.46 + 0j)         # fused silica, a = 5 µm
+beam = PlaneWave(med)
+grid = AngularGrid.full_sphere(500, 120)
+provider = PlaneWaveProvider()
 
-The seed is **reconstructible and self-validating**: if `prototype/` is ever
-missing, rebuild `mie_core` from `PHYSICS.md §1` and the info pattern from §3.1/§4.1,
-then require `validate.py` to pass (`ORCHESTRATOR.md §2`). So its absence is not a
-blocker — but when present, treat it as the reference oracle and the starting point
-for `mie.plane_wave`; do not discard it.
+# Information pattern for axial (z) motion; backward-port efficiency at NA 0.8
+pattern = information_pattern(provider, grid, sphere, beam, np.zeros(3), n_hat=[0, 0, 1])
+eta = collection_efficiency(pattern, CollectionGeometry(direction="backward", NA=0.8))
+print(eta)      # ~0.65 — axial-motion information is backward-weighted
+```
 
-## Non-negotiables
+Rank geometries / channel sets with `mieinfo.optimize.optimize_detection`; confront predictions
+with published results via `mieinfo.literature.compare.compare_benchmark`.
 
-- Scientific code is worthless if wrong. Nothing is "done" until it passes its
-  validation gate (`VALIDATION.md`). Golden values and analytic limits gate every
-  physics module.
-- Contracts in `INTERFACES.md` are frozen unless the orchestrator changes them.
-  A worker that needs a contract change files a blocker; it does not fork the API.
-- Determinism: pinned dependencies, seeded RNG, deterministic tests.
+## Key result
+
+**Information ≠ intensity.** The scattered *intensity* is forward-peaked, but the *information*
+about motion is reweighted by `(k̂ − ŝ)²`: transverse-motion info is forward/off-axis
+(η ≈ 0.8 at NA 0.95), while axial-motion info is **backward-weighted** (η ≈ 0.72 backward vs
+~6 % forward — the backward port is decisive for the beam-collinear axis). A two-beam layout
+covers all three lab axes and Fisher information adds across beams. Trade studies in
+[`docs/recommendation.md`](docs/recommendation.md).
+
+## What's inside
+
+| Package | What |
+|---|---|
+| `mieinfo.mie` | plane-wave Mie (Bohren–Huffman) + far-field VSWFs |
+| `mieinfo.glmt` | focused beams, beam-shape coefficients, GLMT field provider, displacement derivatives |
+| `mieinfo.info` | Fisher-information density, arbitrary-direction combination |
+| `mieinfo.detect` | collection optics, detection schemes, imprecision/backaction/SQL metrics, multi-channel |
+| `mieinfo.optimize` | detection-geometry optimizer + sensitivity analysis |
+| `mieinfo.literature` | experiment/benchmark schema, database, simulation-vs-literature comparison |
+| `mieinfo.validation` | G-GOLD / G-LIMIT / G-CONV gate harness |
+| `mieinfo.viz` | pattern, η(NA), and comparison figures |
+
+`prototype/` holds the validated reference-oracle seed — `python prototype/validate.py --full`
+re-checks the engine against `miepython`, the golden values, and the information-pattern regression.
+
+## Design docs (for contributors)
+
+This package was built against a fixed set of design documents — the physics ground truth,
+frozen module contracts, and validation gates. Read these before changing physics or interfaces:
+
+- [`MASTER_PLAN.md`](MASTER_PLAN.md) — scope, phases, milestones
+- [`PHYSICS.md`](PHYSICS.md) — theory ground truth (equations, references, golden values)
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — repo layout, module DAG, numerics
+- [`INTERFACES.md`](INTERFACES.md) — frozen module contracts
+- [`VALIDATION.md`](VALIDATION.md) — the correctness gates
+- [`CONVENTIONS.md`](CONVENTIONS.md), [`LITERATURE.md`](LITERATURE.md), [`ORCHESTRATOR.md`](ORCHESTRATOR.md), and `W1–W4_*.md` — workflow, bibliography, per-track build briefs
+- [`STATUS.md`](STATUS.md) — current build state and decisions log
+
+## License / contact
+
+Moore Lab, Yale University. License: TBD.
