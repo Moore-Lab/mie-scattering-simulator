@@ -203,9 +203,10 @@ provider, not the plane-wave substitution. Documented, not a pass-by-redefinitio
 
 **Confirmed geometry.** Vertical probe along **ẑ** (the trap axis): NA ≈ **0.02**, waist ≈ 20–30 µm,
 linearly polarized. Horizontal probe along **ŷ**: essentially **collimated** (plane wave, ≫ sphere),
-linearly polarized. **Collection NA = focusing NA** for each. (Note: for a Gaussian beam NA and waist
-are linked by `NA ≈ λ/(π w₀)`, so NA 0.02 ↔ w₀ ≈ 8.5 µm, while w₀ ≈ 25 µm ↔ NA ≈ 0.007 — a mild
-inconsistency; the conclusion below holds across that range.)
+linearly polarized. **Collection NA = focusing NA ≈ 0.02** (confirmed). The illumination waist (20–30 µm) makes the
+vertical beam's *focusing* NA ≈ 0.007–0.009 (`NA ≈ λ/π w₀`), so its illumination is even more
+weakly focused than the collection cone — plane-wave illumination is accurate for spheres ≪ the
+waist, but NOT for a ≈ 20 µm (sphere ≈ waist), where the focused beam matters (see lever 3).
 
 **Beam roles.** Beam-ẑ measures the two *horizontal* axes **x, y as transverse** (the Coriolis pair)
 and z as its collinear axis. Beam-ŷ measures **x, z as transverse** and y as collinear. So the
@@ -224,7 +225,14 @@ collected-information efficiency is essentially nil (silica a = 5 µm, 532 nm, g
 **At NA 0.02 the apparatus captures ≈ 0.02 % of the available transverse-position information**
 (≈ 0.04 % axial, in a backward port) — i.e. it sits ~3–4 orders of magnitude from the
 imprecision–backaction (Heisenberg) limit in information terms. The setup is functional (with enough
-photons), but there is enormous headroom.
+photons), but there is enormous headroom. This is robust across the sphere-size range: transverse-
+forward η ranges 0.005 %–0.03 % over a = 3–20 µm (peaking near a = 10 µm), and axial-backward η grows
+from 0.01 % (a = 3 µm) to 0.85 % (a = 20 µm) — all ≪ 1 %.
+
+**Two-beam Coriolis (x, y) readout.** At NA 0.02, horizontal-x is transverse to *both* beams, so the
+two channels **double** the collected information about x (√2 lower imprecision) — while horizontal-y
+is collinear with the ŷ beam and is measured essentially by the vertical beam alone. Both remain
+≈ 0.02 %; the two-beam gain is a factor of 2 on a very small number, not a fix for the NA.
 
 **Actionable levers (in order of impact):**
 1. **Raise the collection NA.** This is the single biggest lever. NA 0.02 → 0.1 → 0.3 → 0.5 → 0.8
@@ -232,15 +240,19 @@ photons), but there is enormous headroom.
    η ≈ 0.5 needs NA ≈ 0.79.
 2. **Add a backward port for the vertical (z) axis.** Axial motion is unmeasurable forward at any NA
    (η ≲ 0.06 even at NA 0.8); a backward cone gives η ≈ 0.60 at NA 0.5 — decisive for z.
-3. **The focused vertical beam helps modestly.** When the waist ≈ the sphere (w₀ ≈ 8.5 µm), the GLMT
-   focused-beam model gives ~1.5× the plane-wave transverse η; at w₀ ≈ 25 µm the correction is < 5 %.
+3. **The focused vertical beam matters for larger spheres.** The GLMT focused-beam model gives the
+   plane-wave transverse η × ~1 for a ≪ waist, rising to **~6× for a ≈ 20 µm** (sphere ≈ 25 µm waist),
+   because the sphere then samples the beam's own angular spectrum. Still ≪ 1 % at NA 0.02, but the
+   plane-wave figures *underestimate* transverse η for the largest spheres. (The exact factor at
+   n_max ~ 264 warrants a focused-beam convergence check before quoting; the ≪ 1 % conclusion is safe.)
 
 **Caveats.** η here is the optimal-LO information ceiling; a real self-homodyne/imaging readout
-collecting NA 0.02 forward is bounded by these values. Numbers are for a = 5 µm (representative of the
-3–20 µm range; the low-NA values are mildly size-dependent through the ∝ 1/x forward-lobe width). The
-NA-vs-waist inconsistency above shifts the focused-beam correction by ≈ 1.5× but not the order of
-magnitude. Confirm the intended collection NA (0.02 vs the ~0.007 implied by a 25 µm waist) to pin the
-exact digits.
+collecting NA 0.02 forward is bounded by these values. The headline table is a = 5 µm; the size sweep
+(a = 3–20 µm) is given above and stays ≪ 1 %. Collection NA is confirmed at 0.02. The main modelling
+refinement outstanding is the focused-beam (GLMT) treatment of the vertical probe for the largest
+spheres (lever 3): it raises transverse η by up to ~6× at a ≈ 20 µm, still ≪ 1 % — worth a convergence
+check at n_max ~ 264 before quoting an exact focused-beam figure. Pinning the sphere radius you
+actually run would let me give the single exact number for your case.
 
 ---
 
