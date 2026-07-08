@@ -122,16 +122,26 @@ class RichardsWolfFocus:
     is the trustworthy high-NA field (the paraxial Gaussian is not valid at trap NA);
     its BSCs come from projecting this field onto VSWFs (bsc_angular_spectrum /
     bsc_quadrature). In the low-NA limit it collapses to the plane-wave / paraxial
-    result (G-LIMIT). ``polarization`` rotates the transverse input Jones vector;
-    only linear x is modelled exactly (y is the same field rotated 90 deg).
+    result (G-LIMIT).
 
-    VALIDATION CAVEAT (do not trust at high NA). This focused-beam path is gate-validated
-    only in its plane-wave / low-NA limit. An independent cross-check against the Moore Lab
-    dissertation (docs/dissertation_comparison.md) shows that at NA≈0.63 the GLMT engine does
-    NOT reproduce the reference focused-beam information-density numbers — it misses the
-    Gouy-phase axial-forward sensitivity and produces spurious transverse-backscatter. Use the
-    plane-wave provider for weakly-focused beams; the high-NA focused-beam path needs fixing
-    and validation before quantitative use.
+    ``polarization`` is the input transverse Jones vector. The Debye-Wolf field is
+    LINEAR in it, so ANY polarization is exact: the focal field is
+    ``px * E^{x-input} + py * E^{y-input}`` with the y-input field the x-input rotated
+    90 deg about +z. Linear, circular ``(1, 1j)``, and elliptical inputs are all
+    modelled exactly and give |E| = 1 at the focus.
+
+    VALIDATION CAVEAT (axial info density at high NA — still open). The focal field and
+    its BSCs are gate-validated (G-LIMIT, and the intensity is physical). The FOCUSED-BEAM
+    DISPLACEMENT-INFORMATION path, however, is only partially validated at high NA. An
+    independent cross-check against the Moore Lab reference (docs/dissertation_comparison.md;
+    arXiv:2408.15483) confirms the *transverse-forward* focusing gain (plane-wave ~14% ->
+    focused ~38% for a 3 um sphere) but the scattered-field information radiation field
+    (IRF = dE_s/dr_0) is intrinsically BACKWARD-dominated for AXIAL motion — both this GLMT
+    path and an independent angular-spectrum IRF give axial-forward ~1%, and the published
+    reference itself reports axial information collected predominantly backward. This does
+    NOT reproduce a forward-comparable axial number if one is expected from a dissertation
+    figure; see docs/dissertation_comparison.md for the reconciliation. Trust the transverse
+    and G-LIMIT results; treat the absolute axial-forward magnitude as an open item.
     """
 
     def __init__(self, medium: Medium, NA: float, filling_factor: float = 1.0,
@@ -198,24 +208,31 @@ class RichardsWolfFocus:
         E[..., 2] = -2.0 * A * I1 * np.cos(varphi)
         return E
 
+    def _focal_xyz_y(self, xyz: np.ndarray) -> np.ndarray:
+        """+y-polarized aplanatic focal field: the +x field rotated 90 deg about z.
+
+        The Debye-Wolf integral is linear in the input Jones vector, so a y-polarized
+        input gives the x-field evaluated at points rotated by -90 deg, then rotated
+        back by +90 deg (exact; no small-angle approximation)."""
+        xyz = np.asarray(xyz, dtype=float)
+        # R maps beam +x -> +y (rotation by +90 deg about z).
+        R = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+        xyz_rot = xyz @ R                      # evaluate x-field in the rotated frame
+        return self._focal_xyz(xyz_rot) @ R.T  # rotate the field vector back
+
     def focal_field(self, xyz: np.ndarray) -> np.ndarray:
         """E(r) at cartesian points xyz (..., 3) -> (..., 3) complex.
 
-        Computed for +x input polarization, then the transverse Jones vector rotates
-        the field about +z (only real linear polarizations are exact)."""
-        E = self._focal_xyz(xyz)
+        The Debye-Wolf focal field is LINEAR in the input transverse Jones vector, so
+        for an arbitrary (complex) polarization ``(px, py)`` the focal field is the
+        exact superposition ``px * E^{(x-input)} + py * E^{(y-input)}``. The y-input
+        field is the x-input field rotated 90 deg about +z. This is exact for linear,
+        circular, and elliptical polarization (PHYSICS.md §2.2; Novotny & Hecht 3.66)."""
         px, py = self.polarization
-        if abs(py) < 1e-15 and abs(px - 1.0) < 1e-15:
-            return E
-        # Rotate the field by the angle of the (real) Jones vector about z.
-        ang = np.arctan2(np.real(py), np.real(px))
-        c, s = np.cos(ang), np.sin(ang)
-        # Evaluate the +x field in the rotated coordinate frame, then rotate back.
-        xyz = np.asarray(xyz, dtype=float)
-        R = np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
-        xyz_rot = xyz @ R  # rotate points by -ang (R^T applied on the right)
-        E_rot = self._focal_xyz(xyz_rot)
-        return E_rot @ R.T
+        E = px * self._focal_xyz(xyz)
+        if abs(py) > 1e-15:
+            E = E + py * self._focal_xyz_y(xyz)
+        return E
 
     def waist_m(self) -> float:
         """Diffraction-limited focal spot scale ~ lambda / (pi NA)."""

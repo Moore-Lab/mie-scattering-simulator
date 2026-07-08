@@ -92,6 +92,18 @@ SYNTHESIS
   CONVENTIONS.md, LITERATURE.md, W3_literature_analysis.md — and cross-reference-audited
   against the corpus. README's stale `sessions/W*.md` paths reconciled to the root layout
   (all four briefs live in repo root). The read-order in README.md is now complete.
+- 2026-07-08: FOCUSED-BEAM FIX ATTEMPT (high-effort agent, verified independently). OUTCOME:
+  (1) FIXED — RichardsWolfFocus now models ARBITRARY polarization exactly (circular pol correct:
+  |E(0)|=1, Ey=i·Ex; verified). (2) RESOLVED the axial "discrepancy": it is NOT a bug — the axial IRF
+  weight (k_inc,z − k cosθ)² is intrinsically backward-heavy (independently verified: <k_z>/k=0.891 at
+  NA 0.63, backward/forward weight = 299×), and the group's OWN PUBLISHED paper (arXiv:2408.15483,
+  web-verified) says axial info is collected predominantly BACKWARD — so mieinfo matches the published
+  literature; the dissertation figure's forward-comparable "37%" is a different detection definition
+  (likely self-homodyne LO overlap). (3) STILL OPEN — the transverse-BACKWARD at high NA (mieinfo
+  ~29–46%, two internal methods disagree; thesis 3.9%); RichardsWolfFocus high-NA caveat STAYS.
+  Added honest tests (test_circular_polarization, test_thesis_reproduction — the latter ASSERTS the
+  backward-dominated axial as a documented non-reproduction, not a fudged pass). 244 tests green.
+  NOTE: env numpy had drifted to 2.3.5 (broke matplotlib); restored to pinned 1.26.4.
 - 2026-07-08: INDEPENDENT CROSS-CHECK vs the Moore Lab dissertation (Ch. 2 optimal detection) →
   docs/dissertation_comparison.md. FRAMEWORK EXACT (Mie S1/S2, a_n/b_n, GLMT a_nl=−G^TM·a_n, Fisher
   info density |dE/dx|², S_imp∝1/(P_sca∫|dE/dx|²) — all identical to Eqs 2.21–2.65). Dipole/plane-wave
