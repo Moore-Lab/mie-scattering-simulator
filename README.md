@@ -37,6 +37,24 @@ mieinfo compare             # simulate the literature benchmarks (G-LIT)        
 mieinfo report              # optimize + compare + pointer to the recommendation
 ```
 
+## Verifying the results
+
+The engine is checked four independent ways — run any of these yourself:
+
+```bash
+python prototype/validate.py --full   # engine vs miepython (independent Mie impl): ~1e-12 across x=0.3-236
+mieinfo validate                      # physics gates: optical theorem, dipole limit, phi-parity, convergence
+mieinfo compare                       # reproduces published detection efficiencies (Tebbenjohanns 2019, Maurer 2023)
+pytest -q                             # full test suite (234 tests)
+```
+
+Beyond the numerical checks, the physics is **hand-verifiable**: the information density is the
+intensity reweighted by `(k̂ − ŝ)²` (PHYSICS.md §4.1) — so transverse-motion info ∝ `sin²θ`, axial ∝
+`(1 − cosθ)²`. The code reproduces those analytic weights to machine precision, and the resulting
+pattern (transverse peaks off-axis, axial in backscatter) is the Tebbenjohanns-2019 result. Make the
+plots for any configuration with `mieinfo.viz.plot_information_pattern` / `plot_eta_vs_na`
+(see `docs/figures/`).
+
 ## Python API
 
 ```python

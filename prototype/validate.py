@@ -18,7 +18,9 @@ absent, Gates 1-2 SKIP (still self-consistent via Gates 3-4) and the script says
 Usage:  python validate.py            # 1064 info-pattern regression (fast)
         python validate.py --full     # also regenerate + diff the 532 nm set (slower)
 """
-import json, sys, numpy as np
+import json, os, sys, numpy as np
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)          # so validate.py runs from any working directory
 import mie_core as mc
 
 TOL_EFF, TOL_SHAPE, TOL_GOLD, TOL_INFO = 1e-9, 1e-8, 1e-9, 1e-6
@@ -65,7 +67,7 @@ except ImportError:
     print("Gate 1/2  miepython not installed -- SKIPPED  (pip install miepython)")
 
 # ---------- Gate 3: efficiencies vs committed golden ----------
-gv = json.load(open("golden_values.json"))
+gv = json.load(open(os.path.join(HERE, "golden_values.json")))
 g_err = 0.0
 for c in gv["cases"]:
     qe, qs, qb, g = mc.efficiencies(complex(c["m_real"], c["m_imag"]), c["x"])
@@ -77,7 +79,7 @@ check(f"round-trip {len(gv['cases'])} golden cases", g_err, TOL_GOLD)
 # ---------- Gate 4: information-pattern regression ----------
 import information_pattern as ip
 try:
-    ref = json.load(open("information_pattern_results_1064.json"))
+    ref = json.load(open(os.path.join(HERE, "information_pattern_results_1064.json")))
     i_err = 0.0
     for r in ref:
         got = ip.summarize(complex(r["m"], 0.0), r["x"], r["label"])
@@ -93,7 +95,7 @@ except FileNotFoundError:
 
 if "--full" in sys.argv:
     import study_detection_532 as s532
-    op = json.load(open("information_pattern_results.json"))  # operative 532 set
+    op = json.load(open(os.path.join(HERE, "information_pattern_results.json")))  # operative 532 set
     by_a = {round(r["a_um"], 3): r for r in op}
     o_err = 0.0
     print("Gate 4b regenerating operative 532 nm set at committed grids ...")
