@@ -124,6 +124,14 @@ class RichardsWolfFocus:
     bsc_quadrature). In the low-NA limit it collapses to the plane-wave / paraxial
     result (G-LIMIT). ``polarization`` rotates the transverse input Jones vector;
     only linear x is modelled exactly (y is the same field rotated 90 deg).
+
+    VALIDATION CAVEAT (do not trust at high NA). This focused-beam path is gate-validated
+    only in its plane-wave / low-NA limit. An independent cross-check against the Moore Lab
+    dissertation (docs/dissertation_comparison.md) shows that at NA≈0.63 the GLMT engine does
+    NOT reproduce the reference focused-beam information-density numbers — it misses the
+    Gouy-phase axial-forward sensitivity and produces spurious transverse-backscatter. Use the
+    plane-wave provider for weakly-focused beams; the high-NA focused-beam path needs fixing
+    and validation before quantitative use.
     """
 
     def __init__(self, medium: Medium, NA: float, filling_factor: float = 1.0,

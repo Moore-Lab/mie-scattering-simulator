@@ -14,3 +14,5 @@ results/
 files.zip
 !docs/figures/
 !docs/figures/**
+*.pdf
+_ch2_extract.txt

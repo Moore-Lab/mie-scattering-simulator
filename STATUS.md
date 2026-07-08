@@ -92,6 +92,16 @@ SYNTHESIS
   CONVENTIONS.md, LITERATURE.md, W3_literature_analysis.md — and cross-reference-audited
   against the corpus. README's stale `sessions/W*.md` paths reconciled to the root layout
   (all four briefs live in repo root). The read-order in README.md is now complete.
+- 2026-07-08: INDEPENDENT CROSS-CHECK vs the Moore Lab dissertation (Ch. 2 optimal detection) →
+  docs/dissertation_comparison.md. FRAMEWORK EXACT (Mie S1/S2, a_n/b_n, GLMT a_nl=−G^TM·a_n, Fisher
+  info density |dE/dx|², S_imp∝1/(P_sca∫|dE/dx|²) — all identical to Eqs 2.21–2.65). Dipole/plane-wave
+  NUMBERS match (Fig 2.6 d=100nm: transverse fore-aft symmetric, axial strongly backward; within
+  ~1.5–2×). LIMITATION EXPOSED: the RichardsWolfFocus GLMT path is validated only in its plane-wave
+  limit — at NA 0.63 it does NOT reproduce the thesis focused-beam numbers (axial-forward 1.1% vs 37%
+  Gouy-phase; spurious transverse-backward 29.5% vs 3.9%). Only the transverse-forward focusing
+  correction checks out (plane-wave 14%→RW 35.5%≈thesis 38%). Flagged in RichardsWolfFocus docstring;
+  DO NOT trust the high-NA focused-beam path. Recommendation §10 (NA 0.02, weakly focused) is
+  unaffected — plane-wave is accurate there. (43MB thesis PDF gitignored.)
 - 2026-07-08: APPARATUS ANALYSIS (A1–A3, NA 0.02 confirmed) → recommendation.md §10. Headline:
   at NA 0.02 collected-info efficiency ≪1% (~0.02% transverse / up to 0.85% axial-backward);
   collection NA is the dominant lever. WHILE pinning this, FOUND + FIXED a GLMT provider trap:
