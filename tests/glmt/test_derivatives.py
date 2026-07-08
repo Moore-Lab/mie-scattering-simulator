@@ -13,7 +13,6 @@ import pytest
 
 from mieinfo.glmt.beam import GaussianParaxial, PlaneWave
 from mieinfo.glmt.scatter import GLMTProvider, field_derivative
-from mieinfo.glmt.translation import axial_translation_coefficients
 from mieinfo.types import AngularGrid, Medium, Sphere
 
 MED = Medium(n=1.0, wavelength_vacuum_m=532e-9)
@@ -110,16 +109,25 @@ def test_derivative_shape_and_axes():
 
 
 # ---------------------------------------------------------------------------
-# Translation-coefficient kernel — NOT IMPLEMENTED (PENDING stretch item).
-# The prior projection-based kernel was mathematically wrong (it used the origin
-# sphere's quadrature measure on the shifted-center basis, giving reconstruction /
-# group-property errors of tens to hundreds of percent) and has been replaced by an
-# honest NotImplementedError. The validated displacement path is quadrature-BSC
-# recompute about the displaced center (glmt.bsc.bsc_quadrature), exercised above.
+# Scalar axial translation-addition kernel — PENDING (raises NotImplementedError). Two
+# projection drafts failed a genuine radius-independent, all-degree reconstruction, so
+# glmt.translation raises rather than shipping wrong numbers (tests/glmt/test_translation.py).
+# The validated GLMT displacement derivative (G-DERIV, above) uses the finite-difference /
+# product-rule BSC gradient, never a translation matrix.
 # ---------------------------------------------------------------------------
 
-def test_axial_translation_not_implemented_raises():
-    """The analytic translation-addition kernel must raise rather than return
-    silently-wrong numbers (VALIDATION discipline: unvalidated paths raise)."""
-    with pytest.raises(NotImplementedError):
-        axial_translation_coefficients(K, 0.05 * LAM, 10, m=1)
+
+def test_glmt_derivative_does_not_regress_with_translation_kernel():
+    """Wiring note (honesty): the scalar translation kernel does NOT feed the vector
+    displacement derivative. field_derivative(method='analytic') for a focused Gaussian
+    still matches finite_difference to <= 1e-6 (G-DERIV) via the product-rule BSC
+    gradient — the kernel's existence must not change that validated path."""
+    grid, sph = _grid(), _sphere()
+    beam = GaussianParaxial(MED, waist_m=3 * LAM)
+    prov = GLMTProvider(bsc_method="quadrature")
+    r_s = np.array([0.0, 0.0, 0.12e-6])
+    da = field_derivative(prov, grid, sph, beam, r_s, method="analytic")
+    dn = field_derivative(prov, grid, sph, beam, r_s, method="finite_difference")
+    for A, N in ((da.dE_theta, dn.dE_theta), (da.dE_phi, dn.dE_phi)):
+        rel = np.max(np.abs(A - N)) / (np.max(np.abs(N)) + 1e-30)
+        assert rel <= 1e-6
