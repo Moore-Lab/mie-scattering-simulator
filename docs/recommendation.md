@@ -223,17 +223,20 @@ collected-information efficiency is essentially nil (silica a = 5 µm, 532 nm, g
 | transverse (x, y) | **0.0002** | 0.003 | 0.033 | 0.15 | ~0.52 | 0.01–0.03 |
 | axial (z) | 0.0000 | 0.000 | 0.0004 | 0.005 | ~0.06 | **0.60** |
 
-**At NA 0.02 the apparatus captures ≈ 0.02 % of the available transverse-position information**
-(≈ 0.04 % axial, in a backward port) — i.e. it sits ~3–4 orders of magnitude from the
-imprecision–backaction (Heisenberg) limit in information terms. The setup is functional (with enough
-photons), but there is enormous headroom. This is robust across the sphere-size range: transverse-
+**At NA 0.02 the apparatus captures ≈ 0.019 % of the available transverse-position information**
+(silica a = **5 µm** — the confirmed sphere; ≈ 0.035 % axial, in a backward port). Equivalently, the
+imprecision-noise **variance is ~5200× the Heisenberg-limited optimum** (≈ 72× in amplitude). The
+setup is functional (with enough photons), but there is enormous headroom. This is robust across the sphere-size range: transverse-
 forward η ranges 0.005 %–0.03 % over a = 3–20 µm (peaking near a = 10 µm), and axial-backward η grows
 from 0.01 % (a = 3 µm) to 0.85 % (a = 20 µm) — all ≪ 1 %.
 
-**Two-beam Coriolis (x, y) readout.** At NA 0.02, horizontal-x is transverse to *both* beams, so the
-two channels **double** the collected information about x (√2 lower imprecision) — while horizontal-y
-is collinear with the ŷ beam and is measured essentially by the vertical beam alone. Both remain
-≈ 0.02 %; the two-beam gain is a factor of 2 on a very small number, not a fix for the NA.
+**Two-beam coverage of all three axes (a = 5 µm, NA 0.02 forward).** Every lab axis is transverse to
+at least one forward beam, so the layout covers all three even with forward-only ports (η ≈ 0.019 %
+each): **x** is transverse to *both* beams (A ẑ and B ŷ) → the two channels **double** its information
+(√2 lower imprecision); **y** is transverse to the vertical beam A only (collinear with B); **z**
+(vertical) is collinear with A but **transverse to the horizontal beam B**, so B's forward port
+measures it. (A backward port on beam A reads z slightly better, η ≈ 0.035 %.) The two-beam layout buys
+*coverage*, not efficiency — every axis still lands at ≈ 0.02 %; the collection NA is what sets the scale.
 
 **Actionable levers (in order of impact):**
 1. **Raise the collection NA.** This is the single biggest lever. NA 0.02 → 0.1 → 0.3 → 0.5 → 0.8
@@ -250,8 +253,9 @@ is collinear with the ŷ beam and is measured essentially by the vertical beam a
    this cannot recur.)
 
 **Caveats.** η here is the optimal-LO information ceiling; a real self-homodyne/imaging readout
-collecting NA 0.02 forward is bounded by these values. The headline table is a = 5 µm; the size sweep
-(a = 3–20 µm) is given above and stays ≪ 1 %. Collection NA is confirmed at 0.02. The focused-beam (exact
+collecting NA 0.02 forward is bounded by these values. The sphere radius is confirmed at
+a = 5 µm (the numbers above are exact for it; the a = 3–20 µm sweep stays ≪ 1 %). Collection NA is
+confirmed at 0.02. The focused-beam (exact
 quadrature GLMT) treatment has now been checked at the largest sphere (a ≈ 20 µm, n_max ~ 267–283): it
 agrees with plane-wave to ~1.3×, so the plane-wave figures are accurate for this apparatus. Pinning the
 sphere radius you actually run would let me give the single exact number for your case.
