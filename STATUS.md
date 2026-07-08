@@ -92,6 +92,15 @@ SYNTHESIS
   CONVENTIONS.md, LITERATURE.md, W3_literature_analysis.md — and cross-reference-audited
   against the corpus. README's stale `sessions/W*.md` paths reconciled to the root layout
   (all four briefs live in repo root). The read-order in README.md is now complete.
+- 2026-07-08: APPARATUS ANALYSIS (A1–A3, NA 0.02 confirmed) → recommendation.md §10. Headline:
+  at NA 0.02 collected-info efficiency ≪1% (~0.02% transverse / up to 0.85% axial-backward);
+  collection NA is the dominant lever. WHILE pinning this, FOUND + FIXED a GLMT provider trap:
+  auto-mode silently used the LOCALIZED BSC approximation for on-axis Gaussian beams, but localized
+  is invalid when the sphere approaches the waist (verified: ~5% BSC error at a/w=0.2, ~74% at
+  a/w=0.8), producing a bogus ~6× focused-beam factor at a=20µm. FIX: GLMTProvider auto-mode now
+  defaults to the EXACT quadrature BSC for all beams (localized is opt-in for wide-waist/on-axis).
+  With quadrature the focused-beam correction is small (~1.3×) — plane-wave is accurate for this
+  apparatus; §10 corrected. 234 tests green.
 - 2026-07-08: repo on GitHub (Moore-Lab/mie-scattering-simulator); user-facing README (build
   directive preserved as "design docs"); recommendation.md embeds the info-pattern / η(NA) /
   comparison figures.

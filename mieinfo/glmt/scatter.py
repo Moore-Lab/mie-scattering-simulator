@@ -118,9 +118,10 @@ class GLMTProvider:
     ``field_derivative(method='finite_difference')`` differentiates it directly.
 
     BSCs depend only on (beam, sphere_center, n_max) and are reused across the whole
-    angular grid and across DOF, so they are cached (PHYSICS.md §7 cost lever). The
-    method (quadrature vs the fast localized approximation) is chosen automatically by
-    beam type, and can be forced via ``bsc_method``.
+    angular grid and across DOF, so they are cached (PHYSICS.md §7 cost lever). Auto-mode
+    defaults to the EXACT quadrature BSC; the fast localized approximation is opt-in
+    (``bsc_method='localized'``) and valid only for waist >> sphere, on-axis — it is NOT
+    selected automatically because its error grows with sphere/waist (~74% at a≈0.8 w0).
     """
 
     def __init__(self, bsc_method: str = "auto", bsc_kwargs: dict | None = None):
@@ -131,7 +132,7 @@ class GLMTProvider:
     # -- BSC dispatch + cache ------------------------------------------------
     def _bsc(self, beam: IncidentBeam, center_m: np.ndarray, n_max: int):
         from . import bsc as bsc_mod
-        from .beam import GaussianParaxial, RichardsWolfFocus
+        from .beam import RichardsWolfFocus
 
         key = (id(beam), tuple(np.round(center_m, 18)), n_max, self.bsc_method,
                tuple(sorted(self.bsc_kwargs.items())))
@@ -141,10 +142,13 @@ class GLMTProvider:
 
         method = self.bsc_method
         if method == "auto":
-            on_axis = float(np.hypot(center_m[0], center_m[1])) < 1e-15
-            if isinstance(beam, GaussianParaxial) and on_axis:
-                method = "localized"
-            elif isinstance(beam, RichardsWolfFocus):
+            # Default to the EXACT quadrature BSC. The localized approximation is fast
+            # but valid only when the beam varies slowly over the sphere (waist >>
+            # sphere): its BSC error grows with sphere/waist (verified ~5% at a≈0.2 w0,
+            # ~74% at a≈0.8 w0) and it drops the |m|!=1 orders for off-axis centers. So
+            # auto-mode never selects it silently — request it explicitly
+            # (bsc_method="localized") only in the wide-waist, on-axis regime.
+            if isinstance(beam, RichardsWolfFocus):
                 method = "angular_spectrum"
             else:
                 method = "quadrature"

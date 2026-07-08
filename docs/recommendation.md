@@ -205,8 +205,9 @@ provider, not the plane-wave substitution. Documented, not a pass-by-redefinitio
 linearly polarized. Horizontal probe along **ŷ**: essentially **collimated** (plane wave, ≫ sphere),
 linearly polarized. **Collection NA = focusing NA ≈ 0.02** (confirmed). The illumination waist (20–30 µm) makes the
 vertical beam's *focusing* NA ≈ 0.007–0.009 (`NA ≈ λ/π w₀`), so its illumination is even more
-weakly focused than the collection cone — plane-wave illumination is accurate for spheres ≪ the
-waist, but NOT for a ≈ 20 µm (sphere ≈ waist), where the focused beam matters (see lever 3).
+weakly focused than the collection cone. The exact GLMT (quadrature-BSC) treatment confirms the
+focused-beam correction stays small (~1.3×) even at a ≈ 20 µm (lever 3), so the plane-wave figures
+below are accurate for this apparatus across the whole size range.
 
 **Beam roles.** Beam-ẑ measures the two *horizontal* axes **x, y as transverse** (the Coriolis pair)
 and z as its collinear axis. Beam-ŷ measures **x, z as transverse** and y as collinear. So the
@@ -240,19 +241,20 @@ is collinear with the ŷ beam and is measured essentially by the vertical beam a
    η ≈ 0.5 needs NA ≈ 0.79.
 2. **Add a backward port for the vertical (z) axis.** Axial motion is unmeasurable forward at any NA
    (η ≲ 0.06 even at NA 0.8); a backward cone gives η ≈ 0.60 at NA 0.5 — decisive for z.
-3. **The focused vertical beam matters for larger spheres.** The GLMT focused-beam model gives the
-   plane-wave transverse η × ~1 for a ≪ waist, rising to **~6× for a ≈ 20 µm** (sphere ≈ 25 µm waist),
-   because the sphere then samples the beam's own angular spectrum. Still ≪ 1 % at NA 0.02, but the
-   plane-wave figures *underestimate* transverse η for the largest spheres. (The exact factor at
-   n_max ~ 264 warrants a focused-beam convergence check before quoting; the ≪ 1 % conclusion is safe.)
+3. **The focused vertical beam is a small correction.** With the exact quadrature-BSC GLMT model
+   (grid- and n_max-checked), transverse η at a ≈ 20 µm (sphere ≈ 25 µm waist) is ~1.3× the
+   plane-wave value — the weakly-focused vertical beam scatters essentially like a plane wave even at
+   the largest sphere, so there is no focused-beam lever to exploit here. (An earlier ~6× figure was
+   an artifact of the *localized* BSC approximation used outside its validity range — at a/waist ≈ 0.8
+   its BSC error is ~74%; `GLMTProvider` auto-mode has been fixed to use the exact quadrature BSC so
+   this cannot recur.)
 
 **Caveats.** η here is the optimal-LO information ceiling; a real self-homodyne/imaging readout
 collecting NA 0.02 forward is bounded by these values. The headline table is a = 5 µm; the size sweep
-(a = 3–20 µm) is given above and stays ≪ 1 %. Collection NA is confirmed at 0.02. The main modelling
-refinement outstanding is the focused-beam (GLMT) treatment of the vertical probe for the largest
-spheres (lever 3): it raises transverse η by up to ~6× at a ≈ 20 µm, still ≪ 1 % — worth a convergence
-check at n_max ~ 264 before quoting an exact focused-beam figure. Pinning the sphere radius you
-actually run would let me give the single exact number for your case.
+(a = 3–20 µm) is given above and stays ≪ 1 %. Collection NA is confirmed at 0.02. The focused-beam (exact
+quadrature GLMT) treatment has now been checked at the largest sphere (a ≈ 20 µm, n_max ~ 267–283): it
+agrees with plane-wave to ~1.3×, so the plane-wave figures are accurate for this apparatus. Pinning the
+sphere radius you actually run would let me give the single exact number for your case.
 
 ---
 
