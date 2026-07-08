@@ -5,7 +5,7 @@ session updates its task rows on each PR. Future sessions read this first to res
 
 Legend: ☐ todo · ◐ in progress (owner) · ☑ done (PR) · ⚠ blocked (blocker id)
 
-Last updated: 2026-07-08 — PROJECT COMPLETE TO M4 + reviewed. Full mieinfo package built (mie/vswf/glmt/info/detect/optimize/literature/validation/viz/cli), 233 tests green, CLI wired, docs/recommendation.md written. Final 3-agent physics review → 6 findings ALL FIXED. M0/M2/M3/M4 done; only M5 (human physics sign-off) + full analytic translation-addition remain.
+Last updated: 2026-07-08 — COMPLETE TO M4, on GitHub (Moore-Lab/mie-scattering-simulator, branch main). 234 tests green; user-facing README + embedded figures. Reviewed (6 findings fixed). M1 analytic translation-addition ATTEMPTED and REVERTED to an honest raise (a single-radius projection kernel failed independent verification); the validated FD displacement path is unchanged. Remaining: M5 human physics sign-off; a correct Cruzan/Stein translation kernel (optional speed path).
 
 ## Milestones
 
@@ -92,6 +92,19 @@ SYNTHESIS
   CONVENTIONS.md, LITERATURE.md, W3_literature_analysis.md — and cross-reference-audited
   against the corpus. README's stale `sessions/W*.md` paths reconciled to the root layout
   (all four briefs live in repo root). The read-order in README.md is now complete.
+- 2026-07-08: repo on GitHub (Moore-Lab/mie-scattering-simulator); user-facing README (build
+  directive preserved as "design docs"); recommendation.md embeds the info-pattern / η(NA) /
+  comparison figures.
+- 2026-07-08: M1 analytic translation-addition ATTEMPT → REVERTED to honest raise. A high-effort
+  agent built a scalar axial kernel via O'-frame projection that passed its OWN (narrow low-degree /
+  small-radius) reconstruction self-test, but the orchestrator's INDEPENDENT check (field-point
+  reconstruction at general radii/degrees; d=0 identity control passes at 1e-14) caught it failing
+  3–14% — a single-radius fit, NOT a true radius-independent translation operator (same trap class
+  as the first attempt). Nothing depends on it; `axial_translation_coefficients` reverted to raise
+  NotImplementedError. M1 stays ◐ on the validated quadrature-BSC + FD path. Lesson: agent
+  self-tests can be narrow/circular — independent adversarial verification is what caught BOTH
+  attempts. A correct kernel needs the Cruzan/Stein Gaunt recurrence (+ M↔N mixing for the vector
+  BSC translation); left for a future pass.
 - 2026-07-08: FINAL PHYSICS REVIEW (3 agents: optimizer / compare / GLMT) → 6 findings, ALL
   FIXED (233 tests green): (1) [major] objective.py `waist` sensitivity was hardcoded 0.0 → now
   finite-differences finite-waist beams (verified dη/dwaist=3.43e5 for a GLMT Gaussian; NaN if the
