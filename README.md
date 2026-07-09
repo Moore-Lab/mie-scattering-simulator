@@ -37,6 +37,18 @@ mieinfo compare             # simulate the literature benchmarks (G-LIT)        
 mieinfo report              # optimize + compare + pointer to the recommendation
 ```
 
+## Interactive viewer
+
+```bash
+mieinfo serve            # then open http://127.0.0.1:5000  (or: python -m mieinfo.webapp)
+```
+
+A browser app with a parameter panel (quantity, sphere radius, wavelength, index, grid) and an
+interactive, rotatable **3D information-radiation-pattern** plot. Selecting a configuration loads a
+cached pattern from `results/patterns/` if it exists, otherwise computes it with `mieinfo` and caches
+it; a sidebar lists every calculation done so far. Shows the collected-info efficiency η (fwd/bwd at
+NA 0.8) for each pattern.
+
 ## Verifying the results
 
 The engine is checked four independent ways — run any of these yourself:

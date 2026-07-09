@@ -136,12 +136,18 @@ def main(argv: list[str] | None = None) -> int:
     pv = sub.add_parser("validate"); pv.add_argument("--full", action="store_true")
     po = sub.add_parser("optimize"); po.add_argument("config", nargs="?", default=None)
     sub.add_parser("compare"); sub.add_parser("report")
+    ps = sub.add_parser("serve", help="launch the interactive 3D pattern viewer (browser)")
+    ps.add_argument("--port", type=int, default=5000); ps.add_argument("--host", default="127.0.0.1")
     for pp in (po, sub.choices["compare"], sub.choices["report"]):
         pp.add_argument("--out", default=str(ROOT / "results"))
     args = p.parse_args(argv)
 
     if args.cmd == "validate":
         return _validate(args.full)
+    if args.cmd == "serve":
+        from mieinfo.webapp.app import main as serve_main
+        serve_main(host=args.host, port=args.port)
+        return 0
     out = Path(args.out)
     if args.cmd == "optimize":
         return _optimize(args.config, out)

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mieinfo — information pattern viewer</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root { --bg:#0f1720; --panel:#182430; --ink:#e6edf3; --mut:#8aa0b4; --acc:#4f9cff; --line:#2a3a4a; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif; color:var(--ink); background:var(--bg); }
+  header { padding:12px 18px; border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:16px; } header .sub { color:var(--mut); font-size:12px; margin-top:2px; }
+  .wrap { display:grid; grid-template-columns:300px 1fr 260px; gap:0; height:calc(100vh - 54px); }
+  .panel { background:var(--panel); border-right:1px solid var(--line); padding:16px; overflow:auto; }
+  .panel.right { border-right:none; border-left:1px solid var(--line); }
+  label { display:block; color:var(--mut); font-size:12px; margin:10px 0 3px; }
+  input, select { width:100%; padding:7px 8px; background:#0e1620; color:var(--ink);
+                  border:1px solid var(--line); border-radius:6px; font-size:13px; }
+  button { width:100%; margin-top:14px; padding:9px; background:var(--acc); color:#04121f; border:0;
+           border-radius:7px; font-weight:600; cursor:pointer; font-size:13px; }
+  button:disabled { opacity:.5; cursor:wait; }
+  #plot { height:100%; }
+  .status { padding:10px 14px; font-size:12px; color:var(--mut); border-top:1px solid var(--line);
+            background:var(--panel); display:flex; gap:16px; flex-wrap:wrap; }
+  .status b { color:var(--ink); }
+  .badge { padding:1px 7px; border-radius:10px; font-size:11px; }
+  .badge.cached { background:#173a2a; color:#5fd39a; } .badge.fresh { background:#3a2f17; color:#e6b25f; }
+  h3 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 8px; }
+  .item { padding:8px 10px; border:1px solid var(--line); border-radius:7px; margin-bottom:7px; cursor:pointer; }
+  .item:hover { border-color:var(--acc); } .item .t { font-weight:600; font-size:12.5px; }
+  .item .d { color:var(--mut); font-size:11.5px; margin-top:2px; }
+  .empty { color:var(--mut); font-size:12px; }
+  .main { display:flex; flex-direction:column; min-width:0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>mieinfo — information radiation pattern viewer</h1>
+  <div class="sub">Select parameters → loads a cached pattern if it exists, else computes and caches it. Drag to rotate.</div>
+</header>
+<div class="wrap">
+  <!-- left: parameters -->
+  <div class="panel">
+    <h3>Parameters</h3>
+    <label>Quantity</label>
+    <select id="quantity">
+      <option value="info_z">info — z motion (axial)</option>
+      <option value="info_x">info — x motion (transverse ∥pol)</option>
+      <option value="info_y">info — y motion (transverse ⊥pol)</option>
+      <option value="intensity">scattered intensity |E_s|²</option>
+    </select>
+    <label>Sphere radius a (µm)</label><input id="radius_um" type="number" value="5" step="0.5" min="0.05">
+    <label>Wavelength λ (nm)</label><input id="wavelength_nm" type="number" value="532" step="1" min="100">
+    <label>Refractive index m</label><input id="m" type="number" value="1.46" step="0.001" min="1">
+    <label>Angular grid (Nθ × Nφ)</label>
+    <div style="display:flex;gap:8px">
+      <input id="ntheta" type="number" value="110" step="10" min="40" max="400">
+      <input id="nphi" type="number" value="110" step="10" min="24" max="360">
+    </div>
+    <button id="go" onclick="compute()">Compute &amp; view</button>
+    <p class="empty" style="margin-top:14px">Beam along <b>+z</b>, polarization <b>+x</b> (plane-wave model — validated for weakly-focused / low-NA probes).</p>
+  </div>
+  <!-- middle: plot -->
+  <div class="main">
+    <div id="plot"></div>
+    <div class="status" id="status">Pick parameters and press <b style="margin:0 4px">Compute &amp; view</b>.</div>
+  </div>
+  <!-- right: existing calcs -->
+  <div class="panel right">
+    <h3>Existing calculations</h3>
+    <div id="list"><div class="empty">none yet — compute one</div></div>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+function paramsFromForm(){
+  return { quantity:$('quantity').value, radius_um:$('radius_um').value, wavelength_nm:$('wavelength_nm').value,
+           m:$('m').value, ntheta:$('ntheta').value, nphi:$('nphi').value };
+}
+function qs(p){ return Object.entries(p).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&'); }
+
+function render(d){
+  const th=d.theta, ph=d.phi, r=d.r, nt=th.length, npu=ph.length;
+  const X=[],Y=[],Z=[],C=[];
+  for(let i=0;i<nt;i++){ const st=Math.sin(th[i]), ct=Math.cos(th[i]); const xr=[],yr=[],zr=[],cr=[];
+    for(let j=0;j<npu;j++){ const rr=r[i][j]; xr.push(rr*st*Math.cos(ph[j])); yr.push(rr*st*Math.sin(ph[j])); zr.push(rr*ct); cr.push(rr);}
+    X.push(xr);Y.push(yr);Z.push(zr);C.push(cr); }
+  const surf={type:'surface',x:X,y:Y,z:Z,surfacecolor:C,colorscale:'Viridis',cmin:0,cmax:1,
+              showscale:true,colorbar:{title:'norm.',len:.6,thickness:12},lighting:{ambient:.7,diffuse:.6},hoverinfo:'skip'};
+  const axis=(v,name,color)=>({type:'scatter3d',mode:'lines+text',x:[0,v[0]],y:[0,v[1]],z:[0,v[2]],
+      line:{color:color,width:5},text:['',name],textposition:'top center',textfont:{color:color,size:11},hoverinfo:'skip',showlegend:false});
+  const L=1.25;
+  const data=[surf, axis([0,0,L],'+z beam','#e6edf3'), axis([L,0,0],'+x pol','#8aa0b4'),
+              axis([0,L,0],'+y','#8aa0b4'), axis([0,0,-L],'−z (back)','#8aa0b4')];
+  const rng=[-1.15,1.15];
+  const layout={paper_bgcolor:'#0f1720',margin:{l:0,r:0,t:0,b:0},
+    scene:{aspectmode:'cube',xaxis:{range:rng,visible:false},yaxis:{range:rng,visible:false},zaxis:{range:rng,visible:false},
+           camera:{eye:{x:1.5,y:1.4,z:.9}}}};
+  Plotly.react('plot',data,layout,{responsive:true,displaylogo:false});
+}
+function setStatus(d){
+  const p=d.params, e=d['eta_NA0.8']||{};
+  const etaTxt=(e.forward!==undefined)?` &nbsp; η@NA0.8: fwd <b>${(e.forward*100).toFixed(2)}%</b> / bwd <b>${(e.backward*100).toFixed(2)}%</b>`:'';
+  $('status').innerHTML = `<span><b>${d.label}</b></span>`+
+    `<span>a=<b>${p.radius_um}µm</b>, λ=<b>${p.wavelength_nm}nm</b>, m=<b>${p.m}</b>, x=<b>${d.x}</b></span>`+
+    `<span class="badge ${d.cached?'cached':'fresh'}">${d.cached?'loaded from cache':'computed & cached'}</span>`+
+    `<span>${etaTxt}</span>`;
+}
+async function compute(){
+  const p=paramsFromForm(); $('go').disabled=true; $('go').textContent='computing…';
+  try{
+    const res=await fetch('/api/pattern?'+qs(p)); const d=await res.json();
+    if(d.error){ $('status').textContent='Error: '+d.error; return; }
+    render(d); setStatus(d); refreshList();
+  }catch(err){ $('status').textContent='Error: '+err; }
+  finally{ $('go').disabled=false; $('go').textContent='Compute & view'; }
+}
+async function refreshList(){
+  const items=await (await fetch('/api/list')).json();
+  const el=$('list');
+  if(!items.length){ el.innerHTML='<div class="empty">none yet — compute one</div>'; return; }
+  el.innerHTML='';
+  items.forEach(it=>{ const p=it.params; const div=document.createElement('div'); div.className='item';
+    div.innerHTML=`<div class="t">${it.label}</div><div class="d">a=${p.radius_um}µm · λ=${p.wavelength_nm}nm · m=${p.m} · ${p.ntheta}×${p.nphi} · x=${it.x}</div>`;
+    div.onclick=()=>{ $('quantity').value=p.quantity; $('radius_um').value=p.radius_um; $('wavelength_nm').value=p.wavelength_nm;
+      $('m').value=p.m; $('ntheta').value=p.ntheta; $('nphi').value=p.nphi; compute(); };
+    el.appendChild(div); });
+}
+refreshList();
+compute();  // show the default (a=5µm axial) on load
+</script>
+</body>
+</html>

@@ -21,6 +21,7 @@ dev = [
     "hypothesis",
     "miepython>=3.0",   # validation oracle only; never imported by mieinfo at runtime
     "matplotlib>=3.7",
+    "flask>=3.0",       # interactive pattern viewer (mieinfo serve)
     "mypy",
     "ruff",
 ]
